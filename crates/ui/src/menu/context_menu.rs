@@ -1,8 +1,8 @@
 use std::{cell::RefCell, rc::Rc};
 
 use gpui::{
-    AnyElement, App, Context, Corner, DismissEvent, Element, ElementId, Entity, Focusable,
-    GlobalElementId, InspectorElementId, InteractiveElement, IntoElement, MouseButton,
+    AnyElement, App, Bounds, Context, Corner, DismissEvent, Element, ElementId, Entity, Focusable,
+    GlobalElementId, InspectorElementId, InteractiveElement, IntoElement, LayoutId, MouseButton,
     MouseDownEvent, ParentElement, Pixels, Point, StyleRefinement, Styled, Subscription, Window,
     anchored, deferred, div, prelude::FluentBuilder, px,
 };
@@ -141,11 +141,11 @@ impl<E: ParentElement + Styled + IntoElement + 'static> Element for ContextMenu<
 
     fn request_layout(
         &mut self,
-        id: Option<&gpui::GlobalElementId>,
-        _: Option<&gpui::InspectorElementId>,
+        id: Option<&GlobalElementId>,
+        _: Option<&InspectorElementId>,
         window: &mut Window,
         cx: &mut App,
-    ) -> (gpui::LayoutId, Self::RequestLayoutState) {
+    ) -> (LayoutId, Self::RequestLayoutState) {
         let anchor = self.anchor;
 
         self.with_element_state(
@@ -219,9 +219,9 @@ impl<E: ParentElement + Styled + IntoElement + 'static> Element for ContextMenu<
 
     fn prepaint(
         &mut self,
-        _: Option<&gpui::GlobalElementId>,
+        _: Option<&GlobalElementId>,
         _: Option<&InspectorElementId>,
-        _: gpui::Bounds<gpui::Pixels>,
+        _: Bounds<Pixels>,
         request_layout: &mut Self::RequestLayoutState,
         window: &mut Window,
         cx: &mut App,
@@ -233,9 +233,9 @@ impl<E: ParentElement + Styled + IntoElement + 'static> Element for ContextMenu<
 
     fn paint(
         &mut self,
-        id: Option<&gpui::GlobalElementId>,
+        id: Option<&GlobalElementId>,
         _: Option<&InspectorElementId>,
-        bounds: gpui::Bounds<gpui::Pixels>,
+        bounds: Bounds<Pixels>,
         request_layout: &mut Self::RequestLayoutState,
         _: &mut Self::PrepaintState,
         window: &mut Window,
