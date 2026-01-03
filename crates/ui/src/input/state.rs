@@ -4,11 +4,11 @@
 //! https://github.com/zed-industries/zed/blob/main/crates/gpui/examples/input.rs
 use anyhow::Result;
 use gpui::{
-    Action, App, AppContext, Bounds, ClipboardItem, Context, Entity, EntityInputHandler,
-    EventEmitter, FocusHandle, Focusable, InteractiveElement as _, IntoElement, KeyBinding,
-    KeyDownEvent, MouseButton, MouseDownEvent, MouseMoveEvent, MouseUpEvent, ParentElement as _,
-    Pixels, Point, Render, ScrollHandle, ScrollWheelEvent, SharedString, Styled as _, Subscription,
-    Task, UTF16Selection, Window, actions, div, point, prelude::FluentBuilder as _, px,
+    actions, div, point, prelude::FluentBuilder as _, px, Action, App, AppContext, Bounds,
+    ClipboardItem, Context, Entity, EntityInputHandler, EventEmitter, FocusHandle, Focusable,
+    InteractiveElement as _, IntoElement, KeyBinding, KeyDownEvent, MouseButton, MouseDownEvent,
+    MouseMoveEvent, MouseUpEvent, ParentElement as _, Pixels, Point, Render, ScrollHandle,
+    ScrollWheelEvent, SharedString, Styled as _, Subscription, Task, UTF16Selection, Window,
 };
 use gpui::{Half, TextAlign};
 use ropey::{Rope, RopeSlice};
@@ -22,20 +22,20 @@ use super::{
     blink_cursor::BlinkCursor, change::Change, element::TextElement, mask_pattern::MaskPattern,
     mode::InputMode, number_input, text_wrapper::TextWrapper,
 };
-use crate::Size;
 use crate::actions::{SelectDown, SelectLeft, SelectRight, SelectUp};
 use crate::input::blink_cursor::CURSOR_WIDTH;
 use crate::input::movement::MoveDirection;
 use crate::input::{
-    HoverDefinition, Lsp, Position,
     element::RIGHT_MARGIN,
     popovers::{ContextMenu, DiagnosticPopover, HoverPopover, MouseContextMenu},
     search::{self, SearchPanel},
     text_wrapper::LineLayout,
+    HoverDefinition, Lsp, Position,
 };
 use crate::input::{InlineCompletion, RopeExt as _, Selection};
-use crate::{Root, history::History};
+use crate::Size;
 use crate::{highlighter::DiagnosticSet, input::text_wrapper::LineItem};
+use crate::{history::History, Root};
 
 #[derive(Action, Clone, PartialEq, Eq, Deserialize)]
 #[action(namespace = input, no_json)]
@@ -843,6 +843,31 @@ impl InputState {
         self.blink_cursor.update(cx, |cursor, cx| {
             cursor.start(cx);
         });
+    }
+
+    /// Set the selection range using byte offsets.
+    ///
+    /// Selects text from `start` to `end` and positions the cursor at `end`.
+    /// The offsets are clamped to valid bounds within the text.
+    pub fn set_selection(
+        &mut self,
+        start: usize,
+        end: usize,
+        window: &mut Window,
+        cx: &mut Context<Self>,
+    ) {
+        let start = start.min(self.text.len());
+        let end = end.min(self.text.len());
+        self.selected_range = (start..end).into();
+        self.selection_reversed = false;
+        self.scroll_to(end, None, cx);
+        self.focus(window, cx);
+        cx.notify();
+    }
+
+    /// Get the current selection as a byte offset range.
+    pub fn selection(&self) -> std::ops::Range<usize> {
+        self.selected_range.start..self.selected_range.end
     }
 
     pub(super) fn select_left(&mut self, _: &SelectLeft, _: &mut Window, cx: &mut Context<Self>) {
