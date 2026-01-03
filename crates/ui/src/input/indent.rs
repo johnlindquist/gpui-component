@@ -1,15 +1,15 @@
 use gpui::{
-    Bounds, Context, EntityInputHandler as _, Hsla, Path, PathBuilder, Pixels, SharedString,
-    TextRun, TextStyle, Window, point, px,
+    point, px, Bounds, Context, EntityInputHandler as _, Hsla, Path, PathBuilder, Pixels,
+    SharedString, TextRun, TextStyle, Window,
 };
 use ropey::RopeSlice;
 
 use crate::{
-    RopeExt,
     input::{
-        Indent, IndentInline, InputState, LastLayout, Outdent, OutdentInline, element::TextElement,
-        mode::InputMode,
+        element::TextElement, mode::InputMode, Indent, IndentInline, InputState, LastLayout,
+        Outdent, OutdentInline,
     },
+    RopeExt,
 };
 
 #[derive(Debug, Copy, Clone)]
@@ -222,6 +222,11 @@ impl InputState {
         window: &mut Window,
         cx: &mut Context<Self>,
     ) {
+        // If tab navigation mode is enabled, propagate instead of indenting
+        if self.tab_navigation_mode {
+            cx.propagate();
+            return;
+        }
         // First, try to accept inline completion if present
         if self.accept_inline_completion(window, cx) {
             return;
@@ -239,6 +244,11 @@ impl InputState {
         window: &mut Window,
         cx: &mut Context<Self>,
     ) {
+        // If tab navigation mode is enabled, propagate instead of outdenting
+        if self.tab_navigation_mode {
+            cx.propagate();
+            return;
+        }
         self.outdent(false, window, cx);
     }
 

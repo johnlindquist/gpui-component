@@ -348,6 +348,10 @@ pub struct InputState {
 
     pub(super) _context_menu_task: Task<Result<()>>,
     pub(super) inline_completion: InlineCompletion,
+
+    /// When true, Tab/Shift+Tab actions are propagated instead of inserting indent.
+    /// This is useful for snippet/template navigation where Tab moves between tabstops.
+    pub tab_navigation_mode: bool,
 }
 
 impl EventEmitter<InputEvent> for InputState {}
@@ -428,6 +432,7 @@ impl InputState {
             _context_menu_task: Task::ready(Ok(())),
             _pending_update: false,
             inline_completion: InlineCompletion::default(),
+            tab_navigation_mode: false,
         }
     }
 
@@ -437,6 +442,28 @@ impl InputState {
     pub fn multi_line(mut self, multi_line: bool) -> Self {
         self.mode = self.mode.multi_line(multi_line);
         self
+    }
+
+    /// Enable tab navigation mode.
+    ///
+    /// When enabled, Tab/Shift+Tab actions are propagated instead of inserting indent.
+    /// This is useful for snippet/template navigation where Tab moves between tabstops.
+    pub fn tab_navigation(mut self, enabled: bool) -> Self {
+        self.tab_navigation_mode = enabled;
+        self
+    }
+
+    /// Set tab navigation mode at runtime.
+    ///
+    /// When enabled, Tab/Shift+Tab actions are propagated instead of inserting indent.
+    pub fn set_tab_navigation(
+        &mut self,
+        enabled: bool,
+        _window: &mut Window,
+        cx: &mut Context<Self>,
+    ) {
+        self.tab_navigation_mode = enabled;
+        cx.notify();
     }
 
     /// Set Input to use [`InputMode::AutoGrow`] mode with min, max rows limit.
